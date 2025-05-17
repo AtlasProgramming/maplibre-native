@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Release - MapLibre Native Developer Documentation</title>
+        <title>Using Docker - MapLibre Native Developer Documentation</title>
 
 
         <!-- Custom HTML head -->
@@ -260,42 +260,54 @@
 }
 
 </style>
-<h1 id="release-maplibre-android"><a class="header" href="#release-maplibre-android">Release MapLibre Android</a></h1>
-<p>We make MapLibre Android releases as a downloadable asset on <a href="https://github.com/maplibre/maplibre-native/releases?q=android&amp;expanded=true">GitHub</a> as well as to <a href="https://central.sonatype.com/artifact/org.maplibre.gl/android-sdk/versions">Maven Central</a>. Specifically we make use of a Sonatype OSSHR repository provided by Maven Central.</p>
-<p>Also see the current <a href="../release-policy.html">release policy</a>.</p>
-<h2 id="making-a-release"><a class="header" href="#making-a-release">Making a release</a></h2>
-<p>To make an Android release, do the following:</p>
-<ol>
-<li>
-<p>Prepare a PR.</p>
-<ul>
-<li>
-<p>Update <a href="https://github.com/maplibre/maplibre-native/blob/main/platform/android/CHANGELOG.md"><code>CHANGELOG.md</code></a> in a PR, see for example <a href="https://github.com/maplibre/maplibre-native/pull/3194">this PR</a>. The changelog should contain links to all relevant PRs for Android since the last release. You can use the script below with a <a href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens">GitHub access token</a> with the <code>public_repo</code> scope. You will need to filter out PRs that do not relate to Android and categorize PRs as features or bugfixes.</p>
-<pre><code>GITHUB_ACCESS_TOKEN=... node scripts/generate-changelog.mjs android
+<h1 id="building-with-docker"><a class="header" href="#building-with-docker">Building with Docker</a></h1>
+<p>These steps will allow you to compile code as described <a href="./README.html">here</a> using a Docker container. All the steps should be executed from the root of the repository.</p>
+<div class="mdbook-alerts mdbook-alerts-important">
+<p class="mdbook-alerts-title">
+  <span class="mdbook-alerts-icon"></span>
+  important
+</p>
+<p>Not all platform builds are currently supported. Docker builds are a work in progress.</p>
+</div>
+<div class="mdbook-alerts mdbook-alerts-important">
+<p class="mdbook-alerts-title">
+  <span class="mdbook-alerts-icon"></span>
+  important
+</p>
+<p>You cannot build MapLibre native using both Docker and host methods at the same time. If you want to switch, you need to clean the repository first, e.g. by using this command:</p>
+<pre><code class="language-bash">git clean -dxfi -e .idea -e .clwb -e .vscode
 </code></pre>
-<p>The heading in the changelog must match <code>## &lt;VERSION&gt;</code> exactly, or it will not be picked up. For example, for version 9.6.0:</p>
-<pre><code class="language-md">## 9.6.0
+</div>
+<h3 id="build-docker-image"><a class="header" href="#build-docker-image">Build Docker Image</a></h3>
+<p>You must build your own Docker image, specific with your user and group IDs to ensure file permissions stay correct.</p>
+<pre><code class="language-bash"># Build docker image from the repo __root__
+# Specifying USER_UID and USER_GID allows container to create files with the same owner as the host user,
+# and avoids having to pass -u $(id -u):$(id -g) to docker run.
+docker build \
+  -t maplibre-native-image \
+  --build-arg USER_UID=$(id -u) \
+  --build-arg USER_GID=$(id -g) \
+  -f docker/Dockerfile \
+  docker
 </code></pre>
-</li>
-<li>
-<p>Update <code>android/VERSION</code> with the new version.</p>
-</li>
-</ul>
-</li>
-<li>
-<p>Once the PR is merged, the <a href="https://github.com/maplibre/maplibre-native/blob/main/.github/workflows/android-release.yml"><code>android-release.yml</code></a> workflow will run automatically to make the release.</p>
-</li>
-</ol>
+<h2 id="run-docker-container"><a class="header" href="#run-docker-container">Run Docker Container</a></h2>
+<pre><code class="language-bash"># Run all build commands using the docker container.
+# You can also execute build commands from inside the docker container by starting it without the build command.
+docker run --rm -it -v "$PWD:/app/" -v "$PWD/docker/.cache:/home/ubuntu/.cache" maplibre-native-image
+</code></pre>
+<p>You can also use the container to run just one specific commands, e.g. <code>cmake</code> or <code>bazel</code>. Any downloaded dependencies will be cached in the <code>docker/.cache</code> directory.</p>
+<pre><code class="language-bash">docker run --rm -it -v "$PWD:/app/" -v "$PWD/docker/.cache:/home/ubuntu/.cache" maplibre-native-image cmake ...
+</code></pre>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../platforms/android/benchmark.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../platforms/linux/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../platforms/ios/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../release-policy.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -305,11 +317,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../platforms/android/benchmark.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../platforms/linux/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../platforms/ios/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../release-policy.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
