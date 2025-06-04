@@ -7601,6 +7601,8 @@ static void *windowScreenContext = &windowScreenContext;
     mbgl::style::LayerTypeInfo::Layout layout = mbgl::style::LayerTypeInfo::Layout::NotRequired;
     mbgl::style::LayerTypeInfo::CrossTileIndex crossTileIndex = mbgl::style::LayerTypeInfo::CrossTileIndex::NotRequired;
 
+    source = mbgl::style::LayerTypeInfo::Source::NotRequired;
+    tileKind = mbgl::style::LayerTypeInfo::TileKind::Geometry;
 
     /* Future properties for MLNPluginLayerCapabilities
      @property MLNPluginLayerTileKind tileKind;

@@ -2,7 +2,7 @@
 #include "plugin_layer.hpp"
 #include "plugin_layer_impl.hpp"
 #include "plugin_layer_render.hpp"
-// #include "plugin_layer_bucket.hpp"
+#include "plugin_layer_bucket.hpp"
 #include <mbgl/style/conversion_impl.hpp>
 #include <iostream>
 #include <string>
@@ -243,8 +243,8 @@ std::unique_ptr<style::Layer> PluginLayerFactory::createLayer(const std::string&
 
 std::unique_ptr<Bucket> PluginLayerFactory::createBucket(
     const BucketParameters& parameters, const std::vector<Immutable<style::LayerProperties>>& layers) noexcept {
-    // Returning null for now.  Not using buckets in plug-ins yet.
-    return nullptr;
+        
+        return std::make_unique<PluginLayerBucket>(parameters, layers);
 }
 
 std::unique_ptr<RenderLayer> PluginLayerFactory::createRenderLayer(Immutable<style::Layer::Impl> impl) noexcept {

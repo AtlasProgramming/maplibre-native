@@ -540,6 +540,17 @@
         },
         {   "id": "metal-rendering-layer-2",
             "type": "plugin-layer-metal-rendering",
+
+            "source": "maplibre",
+            "filter": [
+                "all"
+            ],
+            "layout": {
+                "visibility": "visible"
+            },
+            "source": "maplibre",
+            "source-layer": "countries",
+
             "properties": {
                 "color1":"#FFAADD",
                 "offset-x": -300
