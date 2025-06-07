@@ -1,6 +1,5 @@
 #include "plugin_layer_impl.hpp"
 #include <iostream>
-#include "plugin_layer_debug.hpp"
 
 namespace mbgl {
 namespace style {
@@ -8,28 +7,13 @@ namespace style {
 PluginLayer::Impl::Impl(std::string layerID,
                         std::string sourceID,
                         LayerTypeInfo layerTypeInfo,
-                        const std::string& layerProperties
-                        // ,const style::conversion::Convertible& layerProperties
-                        )
+                        const std::string& layerProperties)
     : Layer::Impl(layerID, sourceID),
       _layerTypeInfo(layerTypeInfo),
-      _layerProperties(layerProperties)
-//, _layerProperties(layerProperties)
-{
-#if MLN_PLUGIN_LAYER_LOGGING_ENABLED
-    std::cout << "Init\n";
-#endif
-
-    // auto d = new DataDrivenPropertyEvaluator<mbgl::Color, true>();
-}
+      _layerProperties(layerProperties) {}
 
 bool PluginLayer::Impl::hasLayoutDifference(const Layer::Impl& other) const {
-    // TODO: Implement this
     return false;
-    // assert(other.getTypeInfo() == getTypeInfo());
-    //    const auto& impl = static_cast<const style::PluginLayer::Impl&>(other);
-    //    return filter != impl.filter || visibility != impl.visibility ||
-    //    paint.hasDataDrivenPropertyDifference(impl.paint);
 }
 
 // Return this property as json
@@ -46,9 +30,7 @@ std::string PluginLayerProperty::asJSON() {
     return tempResult;
 }
 
-void PluginLayerProperty::setPropertyValue(const conversion::Convertible& value) {
-    // TODO: What goes here?
-}
+void PluginLayerProperty::setPropertyValue(const conversion::Convertible& value) {}
 
 const PropertyValue<float>& PluginLayerProperty::getSingleFloat() const {
     return _singleFloatProperty;
@@ -73,7 +55,6 @@ void PluginLayerPropertyManager::addProperty(PluginLayerProperty* property) {
     _properties[property->_propertyName] = property;
 }
 
-// TODO: Possibly pass in the string
 std::string PluginLayerPropertyManager::propertiesAsJSON() {
     std::string tempResult = "{";
 
@@ -99,7 +80,6 @@ std::vector<PluginLayerProperty*> PluginLayerPropertyManager::getProperties() {
     return tempResult;
 }
 
-// Color
 const PropertyValue<mbgl::Color>& PluginLayerProperty::getColor() const {
     return _dataDrivenColorProperty;
 }
