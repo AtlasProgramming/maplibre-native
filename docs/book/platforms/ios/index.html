@@ -252,7 +252,7 @@ Confirm that no errors are shown.</p>
 <p>It is also possible to build and run the test application in a simulator from the command line without opening Xcode.</p>
 <pre><code>bazel run //platform/ios:App --//:renderer=metal
 </code></pre>
-<p>You can also build targets from the command line. For example, if you want to build your own XCFramework, see the ‘Build XCFramework’ step in the <a href="../../.github/workflows/ios-ci.yml">iOS CI workflow</a>.</p>
+<p>You can also build targets from the command line. For example, if you want to build your own XCFramework, see the ‘Build XCFramework’ step in the <a href="https://github.com/maplibre/maplibre-native/blob/main/.github/workflows/ios-ci.yml">iOS CI workflow</a>.</p>
 <h2 id="cmake"><a class="header" href="#cmake">CMake</a></h2>
 <p>It is also possible to generate an Xcode project using CMake. As of February 2025, targets <code>mbgl-core</code>, <code>ios-sdk-static</code> and <code>app</code> (Objective-C development app) are supported.</p>
 <pre><code>cmake --preset ios-metal -DDEVELOPMENT_TEAM_ID=YOUR_TEAM_ID

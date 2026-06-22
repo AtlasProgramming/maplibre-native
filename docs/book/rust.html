@@ -230,7 +230,7 @@
 <p>Set <code>-DMLN_USE_RUST=ON</code> when generating a configuration with CMake.</p>
 <h3 id="bazel"><a class="header" href="#bazel">Bazel</a></h3>
 <p>Pass the <code>--//:use_rust</code> flag to Bazel commands.</p>
-<p>Note that when <a href="./ios/README.html">generating an Xcode project</a> you should not pass this option to Bazel directly, but as follows:</p>
+<p>Note that when <a href="./platforms/ios/">generating an Xcode project</a> you should not pass this option to Bazel directly, but as follows:</p>
 <pre><code class="language-shell">bazel run //platform/ios:xcodeproj --@rules_xcodeproj//xcodeproj:extra_common_flags="--//:renderer=metal --//:use_rust"
 </code></pre>
 <h2 id="just"><a class="header" href="#just">Just</a></h2>
