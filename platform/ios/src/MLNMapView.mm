@@ -8,14 +8,18 @@
 #include <mbgl/map/map_options.hpp>
 #include <mbgl/map/mode.hpp>
 #include <mbgl/math/wrap.hpp>
+#include <mbgl/layermanager/layer_manager.hpp>
+
 #if MLN_RENDER_BACKEND_METAL
+#include <mbgl/plugin/plugin_layer_factory.hpp>
+#include <mbgl/plugin/plugin_layer.hpp>
+#include <mbgl/plugin/plugin_layer_impl.hpp>
+#include <mbgl/plugin/plugin_style_filter.hpp>
+#include <mbgl/renderer/paint_parameters.hpp>
 #include <mbgl/mtl/mtl_fwd.hpp>
 #include <mbgl/mtl/render_pass.hpp>
 #endif
-#include <mbgl/plugin/plugin_layer.hpp>
-#include <mbgl/plugin/plugin_layer_factory.hpp>
-#include <mbgl/plugin/plugin_layer_impl.hpp>
-#include <mbgl/renderer/paint_parameters.hpp>
+
 #include <mbgl/renderer/renderer.hpp>
 #include <mbgl/storage/network_status.hpp>
 #include <mbgl/storage/resource_options.hpp>
@@ -23,6 +27,8 @@
 #include <mbgl/style/layers/custom_layer.hpp>
 #include <mbgl/style/style.hpp>
 #include <mbgl/style/transition_options.hpp>
+#include <mbgl/plugin/plugin_map_layer.hpp>
+
 #include <mbgl/util/action_journal.hpp>
 #include <mbgl/util/chrono.hpp>
 #include <mbgl/util/client_options.hpp>
@@ -31,9 +37,10 @@
 #include <mbgl/util/geo.hpp>
 #include <mbgl/util/image.hpp>
 #include <mbgl/util/platform.hpp>
-#include <mbgl/util/projection.hpp>
 #include <mbgl/util/run_loop.hpp>
 #include <mbgl/util/string.hpp>
+#include <mbgl/util/projection.hpp>
+
 
 #import "MLNFeature_Private.h"
 #import "MLNFoundation_Private.h"
@@ -83,6 +90,31 @@
 #import "MLNUserLocationAnnotationView.h"
 #import "MLNUserLocationAnnotationView_Private.h"
 #import "MLNUserLocation_Private.h"
+#import "MLNAnnotationImage_Private.h"
+#import "MLNAnnotationView_Private.h"
+#import "MLNCompassButton_Private.h"
+#import "MLNScaleBar.h"
+#import "MLNStyle_Private.h"
+#import "MLNStyleLayer_Private.h"
+#import "MLNCompactCalloutView.h"
+#import "MLNAnnotationContainerView.h"
+#import "MLNAnnotationContainerView_Private.h"
+#import "MLNAttributionInfo_Private.h"
+#import "MLNMapAccessibilityElement.h"
+#import "MLNLocationManager_Private.h"
+#import "MLNLoggingConfiguration_Private.h"
+#import "MLNNetworkConfiguration_Private.h"
+#import "MLNReachability.h"
+#import "MLNRenderingStats_Private.h"
+#import "MLNSettings_Private.h"
+#import "MLNActionJournalOptions_Private.h"
+#import "MLNMapProjection.h"
+#import "MLNPluginLayer.h"
+#import "MLNStyleLayerManager.h"
+#include "MLNPluginStyleLayer_Private.h"
+#include "MLNStyleFilter.h"
+#include "MLNStyleFilter_Private.h"
+#import "MLNCPPPlugins.h"
 
 #include <algorithm>
 #include <cstdlib>
@@ -238,6 +270,22 @@ int processIsTranslated() {
 }
 
 #endif
+
+
+//
+
+extern "C" {
+__attribute__((used))
+__attribute__((visibility("default")))
+void _force_link_MapLayerTypeObjC() {
+    (void)sizeof(mbgl::plugin::LayerProperty);
+    (void)sizeof(mbgl::plugin::MapLayerType);
+    (void)sizeof(mbgl::plugin::DrawingContext);
+    (void)sizeof(mbgl::plugin::RenderingContext);
+    (void)sizeof(mbgl::plugin::MapLayer);
+}
+}
+
 
 class MLNAnnotationContext;
 
@@ -451,6 +499,9 @@ public:
 
 // Plugin Layers
 @property NSMutableArray *pluginLayers;
+
+// Style Filters
+@property NSMutableArray *styleFilters;
 
 @end
 
@@ -7589,6 +7640,7 @@ static void *windowScreenContext = &windowScreenContext;
 
     pluginLayer->_platformReference = (__bridge void *)layer;
 
+    
     MLNPluginLayerCapabilities *capabilities = [pluginLayerClass layerCapabilities];
     auto pluginLayerImpl = (mbgl::style::PluginLayer::Impl *)pluginLayer->baseImpl.get();
     auto &pm = pluginLayerImpl->_propertyManager;
@@ -7684,6 +7736,51 @@ static void *windowScreenContext = &windowScreenContext;
   if (!actionJournal) {
     return nil;
   }
+
+}
+
+/**
+ Adds a style filter to the map view
+ */
+-(void)addStyleFilter:(MLNStyleFilter *)styleFilter {
+    
+    if (!self.styleFilters) {
+        self.styleFilters = [NSMutableArray array];
+    }
+    [self.styleFilters addObject:styleFilter];
+    
+    auto coreStyleFilter = std::make_shared<mbgl::style::PluginStyleFilter>();
+    coreStyleFilter->_filterStyleFunction = [styleFilter](const std::string &filterData) -> const std::string {
+        
+       
+        std::string tempResult;
+
+        @autoreleasepool {
+            NSData *sourceData = [NSData dataWithBytesNoCopy:(void *)filterData.data()
+                                                      length:filterData.size()
+                                                freeWhenDone:NO];
+            NSData *filteredData = [styleFilter filterData:sourceData];
+            tempResult = std::string((const char*)[filteredData bytes], [filteredData length]);
+
+        }
+        return tempResult;
+        
+    };
+    
+    // Set the ivar
+    [styleFilter setFilter:coreStyleFilter];
+    
+    _mbglMap->getStyle().addStyleFilter(coreStyleFilter);
+    
+}
+
+
+- (NSArray<NSString*>*)getActionJournalLogFiles
+{
+    const auto& actionJournal = _mbglMap->getActionJournal();
+    if (!actionJournal) {
+        return nil;
+    }
 
   const auto &files = actionJournal->getLogFiles();
   NSMutableArray<NSString *> *objcFiles = [NSMutableArray new];
